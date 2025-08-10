@@ -45,7 +45,14 @@ class GameController:
         level_generator = LevelGenerator()
         level_data = level_generator.generate_level(difficulty)
         level_data["level_id"] = f"level_{level_number}"
-        
+        level_data = level_generator.generate_level(difficulty)
+        level_data["level_id"] = f"level_{level_number}"
+        if level_number % 3 == 0:  # Каждый третий уровень - замок
+            level_data["level_type"] = "castle"
+        elif level_number % 3 == 2:  # Каждый второй из трех - пещера
+            level_data["level_type"] = "cave"
+        else:  # Остальные - лес
+        level_data["level_type"] = "forest"
         # Создаем уровень и игрока
         self.level = Level(level_data)
         self.player = Player(
