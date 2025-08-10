@@ -4,7 +4,7 @@
 
 # Общие настройки игры
 GAME_TITLE = "⚔️ Рыцарь против Гоблинов"
-SCREEN_WIDTH = 800
+SCREEN_WIDTH = 1800
 SCREEN_HEIGHT = 500
 FPS = 60
 
