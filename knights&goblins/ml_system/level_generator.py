@@ -136,12 +136,14 @@ class LevelGenerator:
             enemy_x = random.randint(platform_to_spawn_on["x"], platform_to_spawn_on["x"] + platform_to_spawn_on["width"] - 50)
             enemy_y = platform_to_spawn_on["y"] - 50 # Над платформой
             enemies.append({"x": enemy_x, "y": enemy_y, "width": 50, "height": 50})
-
+        level_types = ["forest", "cave", "castle"]
+        level_type = random.choice(level_types)
         return {
             "start_x": start_x,
             "start_y": start_y,
             "end_x": end_x,
             "platforms": platforms,
+            "level_type": level_type,
             "enemies": enemies
         }
 
