@@ -20,7 +20,7 @@ class Level:
         self.difficulty = level_data.get('difficulty', 'easy')
         self.time_limit = level_data.get('time_limit', None)  # в секундах, None = без ограничения
         self.objectives = level_data.get('objectives', {'collect_all': False, 'defeat_all': False})
-        
+        self.level_type = level_data.get('level_type', 'forest')
         # Загружаем платформы
         for p_data in level_data.get('platforms', []):
             if p_data.get('moving', False):
