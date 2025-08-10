@@ -40,11 +40,18 @@ def load_sprites():
             try:
                 image = Image.open(sprite_path)
                 # Используем специфические размеры или размер по умолчанию
-                size = sprite_sizes.get(sprite_name, (50, 50))
+                if sprite_name in sprite_sizes:
+                    size = sprite_sizes[sprite_name]
+                else:
+                    size = (50, 50)
                 sprites[sprite_name] = image.resize(size)
             except FileNotFoundError:
                 st.warning(f"Спрайт {sprite_name} не найден по пути {sprite_path}")
                 # Создаем заглушку для спрайта
+                if sprite_name in sprite_sizes:
+                    size = sprite_sizes[sprite_name]
+                else:
+                    size = (50, 50)
                 image = Image.new('RGBA', size, (255, 0, 0, 128))
                 sprites[sprite_name] = image
         return sprites
