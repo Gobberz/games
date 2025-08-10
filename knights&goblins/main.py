@@ -26,6 +26,34 @@ st.markdown("---")
 
 # Функция для загрузки и кэширования спрайтов
 @st.cache_resource
+def load_sprites():
+    sprites = {}
+    sprite_sizes = {
+        "coin": (25, 25),
+        "health_potion": (30, 30),
+        "key": (25, 25),
+        # Остальные спрайты по умолчанию 50x50
+    }
+    
+    try:
+        for sprite_name, sprite_path in config.PATHS["sprites"].items():
+            try:
+                image = Image.open(sprite_path)
+                # Используем специфические размеры или размер по умолчанию
+                size = sprite_sizes.get(sprite_name, (50, 50))
+                sprites[sprite_name] = image.resize(size)
+            except FileNotFoundError:
+                st.warning(f"Спрайт {sprite_name} не найден по пути {sprite_path}")
+                # Создаем заглушку для спрайта
+                image = Image.new('RGBA', size, (255, 0, 0, 128))
+                sprites[sprite_name] = image
+        return sprites
+    except Exception as e:
+        st.error(f"Ошибка при загрузке спрайтов: {e}")
+        return {}
+
+# Функция для загрузки и кэширования фоновых изображений
+@st.cache_resource
 def load_backgrounds():
     backgrounds = {}
     try:
@@ -41,25 +69,6 @@ def load_backgrounds():
         return backgrounds
     except Exception as e:
         st.error(f"Ошибка при загрузке фонов: {e}")
-        return {}
-def load_sprites():
-    sprites = {}
-    try:
-        for sprite_name, sprite_path in config.PATHS["sprites"].items():
-            try:
-                image = Image.open(sprite_path)
-                # Проверяем наличие папки для спрайта
-                if not os.path.exists(os.path.dirname(sprite_path)):
-                    os.makedirs(os.path.dirname(sprite_path), exist_ok=True)
-                sprites[sprite_name] = image.resize((50, 50))
-            except FileNotFoundError:
-                st.warning(f"Спрайт {sprite_name} не найден по пути {sprite_path}")
-                # Создаем заглушку для спрайта
-                image = Image.new('RGBA', (50, 50), (255, 0, 0, 128))
-                sprites[sprite_name] = image
-        return sprites
-    except Exception as e:
-        st.error(f"Ошибка при загрузке спрайтов: {e}")
         return {}
 
 # Функция для преобразования изображения в base64 для HTML
@@ -79,6 +88,7 @@ if 'sprites' not in st.session_state:
     st.session_state.sprites = load_sprites()
 if 'backgrounds' not in st.session_state:
     st.session_state.backgrounds = load_backgrounds()
+
 # Создаем игровой контейнер
 game_container = st.empty()
 
@@ -124,7 +134,7 @@ with st.sidebar:
     st.write("Shift - Рывок")
 
 # Обработка ввода с мобильных устройств
-control_cols = st.columns([1, 1, 1, 1])
+control_cols = st.columns([1, 1, 1, 1, 1])
 with control_cols[0]:
     if st.button("⬅️", key="mobile_left_btn"):
         st.session_state.game_controller.player.move_left()
@@ -141,6 +151,10 @@ with control_cols[3]:
     if st.button("⚔️", key="mobile_attack_btn"):
         if st.session_state.game_controller.player.attack():
             st.session_state.player_analyzer.log_action("attack", st.session_state.game_controller.player, st.session_state.game_controller.level)
+with control_cols[4]:
+    if st.button("⚡", key="mobile_dash_btn"):
+        if st.session_state.game_controller.player.dash():
+            st.session_state.player_analyzer.log_action("dash", st.session_state.game_controller.player, st.session_state.game_controller.level)
 
 # Обновляем состояние игры
 controller = st.session_state.game_controller
@@ -150,8 +164,7 @@ controller.update()
 with game_container.container():
     # Информация о текущем состоянии игры
     st.write(f"Здоровье: {controller.player.health} | Монеты: {controller.player.coins} | Очки: {controller.score} | Жизни: {controller.lives}")
-    level_type = controller.level.level_type
-    background_key = config.LEVEL_TYPES[level_type]["background"]
+    
     # Статус уровня
     if controller.level_completed:
         st.success("🎉 Уровень пройден! 🎉")
@@ -161,6 +174,17 @@ with game_container.container():
             level_data["level_id"] = f"level_{controller.level_number}"
             controller.load_level(level_data)
             st.experimental_rerun()
+    
+    if controller.game_over:
+        st.error("😢 Игра окончена! 😢")
+        if st.button("Начать заново"):
+            controller.initialize_game()
+            st.experimental_rerun()
+    
+    # Получаем тип уровня и фон
+    level_type = controller.level.level_type
+    background_key = config.LEVEL_TYPES[level_type]["background"]
+    
     # Берем фоновое изображение из кэша или используем цвет по умолчанию
     if background_key in st.session_state.backgrounds:
         bg_image = st.session_state.backgrounds[background_key]
@@ -177,28 +201,16 @@ with game_container.container():
         <div style="position: relative; width: {config.SCREEN_WIDTH}px; height: {config.SCREEN_HEIGHT}px; 
                  border: 2px solid #333; background-color: #87CEEB; overflow: hidden;">
         """
-    if controller.game_over:
-        st.error("😢 Игра окончена! 😢")
-        if st.button("Начать заново"):
-            controller.initialize_game()
-            st.experimental_rerun()
-    
-    # Визуализация игрового мира с использованием HTML/CSS
-    game_area_html = f"""
-    <div style="position: relative; width: {config.SCREEN_WIDTH}px; height: {config.SCREEN_HEIGHT}px; 
-               border: 2px solid #333; background-color: #87CEEB; overflow: hidden;">
-    """
     
     # Отображение платформ
+    platform_color = config.LEVEL_TYPES.get(level_type, {}).get("platform_color", "#228B22")
     for platform in controller.level.platforms:
-        platform_color = "#228B22"  # Обычная платформа
-        if hasattr(platform, 'destructible') and platform.destructible:
-            platform_color = "#A0522D"  # Разрушаемая платформа
+        platform_color_actual = "#A0522D" if hasattr(platform, 'destructible') and platform.destructible else platform_color
         
         game_area_html += f"""
         <div style="position: absolute; left: {platform.x}px; top: {platform.y}px; 
                    width: {platform.width}px; height: {platform.height}px; 
-                   background-color: {platform_color};">
+                   background-color: {platform_color_actual};">
         </div>
         """
     
@@ -223,6 +235,13 @@ with game_container.container():
                      style="position: absolute; left: {collectible.x}px; top: {collectible.y}px; 
                             width: {collectible.width}px; height: {collectible.height}px;">
                 """
+                
+                # Добавляем эффект блеска для монет
+                if collectible.type == "coin" and hasattr(collectible, 'sparkle_visible') and collectible.sparkle_visible:
+                    game_area_html += f"""
+                    <div style="position: absolute; left: {collectible.x + 5}px; top: {collectible.y - 5}px; 
+                              font-size: 12px; color: yellow;">✨</div>
+                    """
             else:
                 # Цвет по умолчанию, если спрайт не найден
                 collectible_color = config.COLLECTIBLE_TYPES.get(collectible.type, {}).get("color", "gold")
@@ -240,4 +259,110 @@ with game_container.container():
             if enemy_sprite:
                 enemy_base64 = get_image_base64(enemy_sprite)
                 game_area_html += f"""
-                <img src="data:image/png;base64
+                <img src="data:image/png;base64,{enemy_base64}" 
+                     style="position: absolute; left: {enemy.x}px; top: {enemy.y}px; 
+                            width: {enemy.width}px; height: {enemy.height}px;">
+                """
+            else:
+                # Цвет по умолчанию, если спрайт не найден
+                enemy_color = config.ENEMY_TYPES.get(enemy.enemy_type, {}).get("color", "red")
+                game_area_html += f"""
+                <div style="position: absolute; left: {enemy.x}px; top: {enemy.y}px; 
+                           width: {enemy.width}px; height: {enemy.height}px; 
+                           background-color: {enemy_color};">
+                </div>
+                """
+            
+            # Отображение полоски здоровья для врагов
+            health_percentage = enemy.health / enemy.max_health
+            game_area_html += f"""
+            <div style="position: absolute; left: {enemy.x}px; top: {enemy.y - 10}px; 
+                       width: {enemy.width}px; height: 5px; background-color: #FF0000;">
+                <div style="width: {health_percentage * 100}%; height: 100%; background-color: #00FF00;"></div>
+            </div>
+            """
+    
+    # Отображение проектилей (стрелы лучников и т.д.)
+    for enemy in controller.level.enemies:
+        if hasattr(enemy, 'projectiles'):
+            for projectile in enemy.projectiles:
+                game_area_html += f"""
+                <div style="position: absolute; left: {projectile['x']}px; top: {projectile['y']}px; 
+                          width: {projectile['width']}px; height: {projectile['height']}px; 
+                          background-color: yellow; border-radius: 50%;">
+                </div>
+                """
+    
+    # Отображение игрока
+    player_sprite = st.session_state.sprites.get("knight", None)
+    if player_sprite:
+        player_base64 = get_image_base64(player_sprite)
+        game_area_html += f"""
+        <img src="data:image/png;base64,{player_base64}" 
+             style="position: absolute; left: {controller.player.x}px; top: {controller.player.y}px; 
+                    width: {controller.player.width}px; height: {controller.player.height}px; 
+                    transform: scaleX({1 if controller.player.facing_right else -1});">
+        """
+    else:
+        player_color = "blue"
+        if controller.player.invulnerable:
+            player_color = "rgba(0, 0, 255, 0.5)"  # Полупрозрачный синий для неуязвимости
+            
+        game_area_html += f"""
+        <div style="position: absolute; left: {controller.player.x}px; top: {controller.player.y}px; 
+                   width: {controller.player.width}px; height: {controller.player.height}px; 
+                   background-color: {player_color};">
+        </div>
+        """
+    
+    # Отображение атаки игрока (если в данный момент атакует)
+    if controller.player.is_attacking:
+        attack_direction = 1 if controller.player.facing_right else -1
+        attack_x = controller.player.x + (controller.player.width if attack_direction > 0 else -controller.player.attack_range)
+        attack_width = controller.player.attack_range
+        
+        game_area_html += f"""
+        <div style="position: absolute; left: {attack_x}px; top: {controller.player.y}px; 
+                   width: {attack_width}px; height: {controller.player.height}px; 
+                   background-color: rgba(255, 255, 0, 0.5); border: 1px solid yellow;">
+        </div>
+        """
+    
+    # Отображение дверей/выхода уровня
+    game_area_html += f"""
+    <div style="position: absolute; left: {controller.level.end_x - 20}px; top: {controller.level.end_y - 40}px; 
+               width: 40px; height: 40px; background-color: rgba(0, 255, 0, 0.7); 
+               border: 2px solid darkgreen; border-radius: 5px;">
+        <div style="text-align: center; margin-top: 5px; font-weight: bold; color: white;">⚑</div>
+    </div>
+    """
+    
+    # Закрываем основной div
+    game_area_html += "</div>"
+    
+    # Отображаем HTML на странице
+    st.components.v1.html(game_area_html, height=config.SCREEN_HEIGHT + 10)
+    
+    # Показываем статистику уровня
+    st.markdown("---")
+    st.subheader("Статистика уровня")
+    stats_cols = st.columns(4)
+    
+    with stats_cols[0]:
+        st.write(f"Оставшиеся враги: {controller.level.get_remaining_enemies()}")
+    with stats_cols[1]:
+        st.write(f"Оставшиеся предметы: {controller.level.get_remaining_collectibles()}")
+    with stats_cols[2]:
+        st.write(f"Время на уровне: {controller.game_time:.1f} с")
+    with stats_cols[3]:
+        # Проверяем цели уровня
+        collect_all = controller.level.objectives.get('collect_all', False)
+        defeat_all = controller.level.objectives.get('defeat_all', False)
+        
+        objective_text = "Дойти до конца уровня"
+        if collect_all:
+            objective_text += ", собрать все предметы"
+        if defeat_all:
+            objective_text += ", победить всех врагов"
+            
+        st.write(f"Цель: {objective_text}")
