@@ -1,4 +1,9 @@
 import time
+import sys
+import os
+
+# Добавляем корневую директорию проекта в sys.path для импорта config
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config
 
 class Player:
