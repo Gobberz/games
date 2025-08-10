@@ -12,6 +12,12 @@ from ml_system.player_analyzer import PlayerAnalyzer
 from ml_system.level_generator import LevelGenerator
 import config
 
+st.write("Текущая директория:", os.getcwd())
+st.write("Содержимое текущей директории:", os.listdir())
+if os.path.exists("knights&goblins"):
+    st.write("Содержимое папки knights&goblins:", os.listdir("knights&goblins"))
+    if os.path.exists("knights&goblins/assets"):
+        st.write("Содержимое папки knights&goblins/assets:", os.listdir("knights&goblins/assets"))
 # Настройка страницы
 st.set_page_config(
     page_title=config.GAME_TITLE,
