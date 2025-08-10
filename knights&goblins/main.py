@@ -26,6 +26,22 @@ st.markdown("---")
 
 # Функция для загрузки и кэширования спрайтов
 @st.cache_resource
+def load_backgrounds():
+    backgrounds = {}
+    try:
+        for bg_name, bg_path in config.PATHS["backgrounds"].items():
+            try:
+                image = Image.open(bg_path)
+                backgrounds[bg_name] = image
+            except FileNotFoundError:
+                st.warning(f"Фон {bg_name} не найден по пути {bg_path}")
+                # Создаем заглушку для фона
+                image = Image.new('RGB', (800, 500), (100, 100, 150))
+                backgrounds[bg_name] = image
+        return backgrounds
+    except Exception as e:
+        st.error(f"Ошибка при загрузке фонов: {e}")
+        return {}
 def load_sprites():
     sprites = {}
     try:
@@ -61,7 +77,8 @@ if 'level_generator' not in st.session_state:
     st.session_state.level_generator = LevelGenerator()
 if 'sprites' not in st.session_state:
     st.session_state.sprites = load_sprites()
-
+if 'backgrounds' not in st.session_state:
+    st.session_state.backgrounds = load_backgrounds()
 # Создаем игровой контейнер
 game_container = st.empty()
 
@@ -133,7 +150,8 @@ controller.update()
 with game_container.container():
     # Информация о текущем состоянии игры
     st.write(f"Здоровье: {controller.player.health} | Монеты: {controller.player.coins} | Очки: {controller.score} | Жизни: {controller.lives}")
-    
+    level_type = controller.level.level_type
+    background_key = config.LEVEL_TYPES[level_type]["background"]
     # Статус уровня
     if controller.level_completed:
         st.success("🎉 Уровень пройден! 🎉")
@@ -143,7 +161,22 @@ with game_container.container():
             level_data["level_id"] = f"level_{controller.level_number}"
             controller.load_level(level_data)
             st.experimental_rerun()
-    
+    # Берем фоновое изображение из кэша или используем цвет по умолчанию
+    if background_key in st.session_state.backgrounds:
+        bg_image = st.session_state.backgrounds[background_key]
+        bg_base64 = get_image_base64(bg_image.resize((config.SCREEN_WIDTH, config.SCREEN_HEIGHT)))
+        game_area_html = f"""
+        <div style="position: relative; width: {config.SCREEN_WIDTH}px; height: {config.SCREEN_HEIGHT}px; 
+                 border: 2px solid #333; overflow: hidden;">
+            <img src="data:image/png;base64,{bg_base64}" 
+                 style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover;">
+        """
+    else:
+        # Запасной вариант, если фон не найден
+        game_area_html = f"""
+        <div style="position: relative; width: {config.SCREEN_WIDTH}px; height: {config.SCREEN_HEIGHT}px; 
+                 border: 2px solid #333; background-color: #87CEEB; overflow: hidden;">
+        """
     if controller.game_over:
         st.error("😢 Игра окончена! 😢")
         if st.button("Начать заново"):
