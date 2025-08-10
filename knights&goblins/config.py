@@ -123,14 +123,15 @@ PATHS = {
         "coin": "assets/sprites/coin.png",
         "health_potion": "assets/sprites/health_potion.png",
         "key": "assets/sprites/key.png",
-    }
-     "backgrounds": {
+    },
+    "backgrounds": {
         "forest": "assets/backgrounds/forest.png",
         "cave": "assets/backgrounds/cave.png",
         "castle": "assets/backgrounds/castle.png",
     }
 }
-# Добавьте настройки типов уровней
+
+# Настройки типов уровней
 LEVEL_TYPES = {
     "forest": {
         "background": "forest",
