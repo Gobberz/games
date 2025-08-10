@@ -112,22 +112,22 @@ COLLECTIBLE_TYPES = {
 
 # Пути к файлам
 PATHS = {
-    "game_state": "data/game_state.json",
-    "level_stats": "data/level_stats.json",
-    "player_actions": "data/player_actions.json",
+    "game_state": "knights&goblins/data/game_state.json",
+    "level_stats": "knights&goblins/data/level_stats.json",
+    "player_actions": "knights&goblins/data/player_actions.json",
     "sprites": {
-        "knight": "assets/sprites/knight.png",
-        "goblin": "assets/sprites/goblin.png",
-        "archer": "assets/sprites/archer.png",
-        "troll": "assets/sprites/troll.png",
-        "coin": "assets/sprites/coin.png",
-        "health_potion": "assets/sprites/health_potion.png",
-        "key": "assets/sprites/key.png",
+        "knight": "knights&goblins/assets/sprites/knight.png",
+        "goblin": "knights&goblins/assets/sprites/goblin.png",
+        "archer": "knights&goblins/assets/sprites/archer.png",
+        "troll": "knights&goblins/assets/sprites/troll.png",
+        "coin": "knights&goblins/assets/sprites/coin.png",
+        "health_potion": "knights&goblins/assets/sprites/health_potion.png",
+        "key": "knights&goblins/assets/sprites/key.png",
     },
     "backgrounds": {
-        "forest": "assets/backgrounds/forest.png",
-        "cave": "assets/backgrounds/cave.png",
-        "castle": "assets/backgrounds/castle.png",
+        "forest": "knights&goblins/assets/backgrounds/forest.png",
+        "cave": "knights&goblins/assets/backgrounds/cave.png",
+        "castle": "knights&goblins/assets/backgrounds/castle.png",
     }
 }
 
