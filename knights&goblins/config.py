@@ -124,4 +124,24 @@ PATHS = {
         "health_potion": "assets/sprites/health_potion.png",
         "key": "assets/sprites/key.png",
     }
+     "backgrounds": {
+        "forest": "assets/backgrounds/forest.png",
+        "cave": "assets/backgrounds/cave.png",
+        "castle": "assets/backgrounds/castle.png",
+    }
+}
+# Добавьте настройки типов уровней
+LEVEL_TYPES = {
+    "forest": {
+        "background": "forest",
+        "platform_color": "#6B8E23",  # Оливково-зеленый для лесных платформ
+    },
+    "cave": {
+        "background": "cave",
+        "platform_color": "#708090",  # Серый для пещерных платформ
+    },
+    "castle": {
+        "background": "castle",
+        "platform_color": "#8B4513",  # Коричневый для замковых платформ
+    }
 }
