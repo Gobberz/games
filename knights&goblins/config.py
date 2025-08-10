@@ -125,9 +125,9 @@ PATHS = {
         "key": "knights&goblins/assets/sprites/key.png",
     },
     "backgrounds": {
-        "forest": "knights&goblins/assets/backgrounds/forest.png",
-        "cave": "knights&goblins/assets/backgrounds/cave.png",
-        "castle": "knights&goblins/assets/backgrounds/castle.png",
+        "forest": "games/knights&goblins/assets/backgrounds/forest.png",
+        "cave": "games/knights&goblins/assets/backgrounds/cave.png",
+        "castle": "games/knights&goblins/assets/backgrounds/castle.png",
     }
 }
 
