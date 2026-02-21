@@ -1,110 +1,110 @@
 # 🃏 BlackJack Trainer
 
-**ML-тренажёр по Basic Strategy блекджека.**  
-Анализирует каждый ваш ход, выявляет паттерны ошибок через ML, показывает тепловую карту слабых мест.
+**ML-powered Basic Strategy trainer for Blackjack.**  
+Analyzes every move, detects error patterns through ML, and shows a heatmap of your weak spots.
 
 ---
 
-## Быстрый старт
+## Quick Start
 
 ```bash
-# Установка зависимостей
+# Install dependencies
 pip install -r requirements.txt
 
-# Запуск приложения
+# Run the app
 streamlit run app.py
 ```
 
 ---
 
-## Структура проекта
+## Project Structure
 
 ```
 blackjack_trainer/
-├── app.py                     # Точка входа Streamlit
+├── app.py                     # Streamlit entry point
 ├── requirements.txt
 │
 ├── game/
 │   ├── engine.py              # Card, Deck, Hand, Game
-│   ├── strategy.py            # Basic Strategy таблица (18×10)
+│   ├── strategy.py            # Basic Strategy table (18×10)
 │   └── evaluator.py
 │
 ├── data/
 │   ├── database.py            # SQLite connection manager
-│   ├── schema.py              # DDL схема таблиц
-│   ├── repository.py          # CRUD + аналитические запросы
-│   └── game_session.py        # Фасад: движок + БД
+│   ├── schema.py              # DDL table schema
+│   ├── repository.py          # CRUD + analytics queries
+│   └── game_session.py        # Facade: engine + DB
 │
 ├── ml/
 │   ├── features.py            # Feature engineering
 │   ├── trainer.py             # RF + KMeans + LR
-│   ├── predictor.py           # Real-time инференс
-│   ├── bootstrap.py           # Синтетические данные (cold start)
-│   └── simulation.py         # Monte-Carlo симулятор
+│   ├── predictor.py           # Real-time inference
+│   ├── bootstrap.py           # Synthetic data (cold start)
+│   └── simulation.py          # Monte Carlo simulator
 │
 ├── ui/
-│   ├── styles.py              # CSS тема + HTML helpers
-│   ├── game_view.py           # Игровой стол
-│   ├── analytics_view.py      # Дашборд аналитики
-│   └── simulation_view.py     # Monte-Carlo страница
+│   ├── styles.py              # CSS theme + HTML helpers
+│   ├── game_view.py           # Game table
+│   ├── analytics_view.py      # Analytics dashboard
+│   └── simulation_view.py     # Monte Carlo page
 │
 └── tests/
-    ├── test_game.py           # 84 теста движка и стратегии
-    ├── test_data.py           # 64 теста БД слоя
-    ├── test_ui.py             # 35 тестов UI и симуляции
-    └── test_ml.py             # 46 тестов ML пайплайна
+    ├── test_game.py           # 84 tests for engine and strategy
+    ├── test_data.py           # 64 tests for DB layer
+    ├── test_ui.py             # 35 tests for UI and simulation
+    └── test_ml.py             # 46 tests for ML pipeline
 ```
 
 ---
 
-## Страницы приложения
+## App Pages
 
-### 🎮 Игра
-- Полноценный блекджек с 6-колодным башмаком
-- Фидбек после каждого хода: верно / ошибка + что нужно было сделать
-- ML-предупреждение если вы часто ошибаетесь в данной ситуации
+### 🎮 Game
+- Full blackjack with 6-deck shoe
+- Feedback after every move: correct/mistake + what you should have done
+- ML warning when you frequently mess up in similar situations
 
-### 📊 Аналитика
-- **Тепловая карта ошибок** — сетка 18×10, какие ситуации проблемные
-- **График прогресса** — точность и win rate по сессиям
-- **Профиль игрока** — ML-кластер (Эксперт / Осторожный / Импульсивный / Хаотик)
+### 📊 Analytics
+- **Error heatmap** — 18×10 grid showing your problem spots
+- **Progress chart** — accuracy and win rate across sessions
+- **Player profile** — ML cluster (Expert / Cautious / Impulsive / Chaotic)
 
-### 🔬 Симуляция
-- Monte-Carlo: 1k–25k раундов
-- Три стратегии: Basic Strategy, Новичок, Случайная
-- EV-анализ и динамика баланса
+### 🔬 Simulation
+- Monte Carlo: 1k–25k rounds
+- Three strategies: Basic Strategy, Beginner, Random
+- EV analysis and balance over time
 
 ---
 
-## Запуск тестов
+## Running Tests
 
 ```bash
 python -m unittest discover -s tests -v
-# Ожидается: Ran 229 tests ... OK
+# Expected: Ran 235 tests ... OK
 ```
 
 ---
 
-## ML пайплайн
+## ML Pipeline
 
-| Модель | Задача | Входные признаки | Результат |
-|--------|--------|-----------------|-----------|
-| Random Forest | P(ошибка) | player_total, dealer_upcard, is_soft, is_pair, action | Предупреждение в UI |
-| KMeans (k=4) | Кластер стиля | hit_rate, stand_rate, double_rate, soft_accuracy | Архетип игрока |
-| Logistic Reg | Точность по ситуации | Те же признаки | Топ проблемных мест |
+| Model | Task | Input Features | Output |
+|-------|------|---------------|--------|
+| Random Forest | P(error) | player_total, dealer_upcard, is_soft, is_pair, action | Warning in UI |
+| KMeans (k=4) | Play style cluster | hit_rate, stand_rate, double_rate, soft_accuracy | Player archetype |
+| Logistic Reg | Accuracy by situation | Same features | Top problem spots |
 
-**Cold start**: при первом запуске генерируется 200 синтетических ходов  
-(имитация новичка) для начального обучения моделей.
+**Cold start**: On first run, generates 200 synthetic moves  
+(simulating a beginner) for initial model training.
 
-**Переобучение**: автоматически каждые 25 новых ходов.
+**Retraining**: Automatically every 25 new moves.
 
 ---
 
-## Правила Basic Strategy (6 колод, дилер стоит на Soft 17)
+## Basic Strategy Rules (6 decks, dealer stands on Soft 17)
 
-- **Hard 17+** → всегда Stand
-- **Hard 11** → Double vs 2–10, Hit vs Туз  
-- **Hard 12** → Stand vs 4–6, Hit vs остальных
-- **8-8, A-A** → всегда Split
-- **10-10** → никогда не Split
+- **Hard 17+** → always Stand
+- **Hard 11** → Double vs 2–10, Hit vs Ace  
+- **Hard 12** → Stand vs 4–6, Hit vs others
+- **8-8, A-A** → always Split
+- **10-10** → never Split
 - **Soft 18** → Double vs 3–6, Stand vs 7–8, Hit vs 9–A
