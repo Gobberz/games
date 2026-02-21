@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carcassonne Analytics</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/konva@9/konva.min.js"></script>
+</head>
+<body>
+    <div id="lobby">
+        <div id="lobby-box">
+            <div class="lobby-header">
+                <h1>Carcassonne</h1>
+                <span class="subtitle">Analytics Edition</span>
+            </div>
+            <input type="text" id="player-name" placeholder="Your name" value="">
+            <div class="form-group">
+                <label>Opponent</label>
+                <select id="opponent-type">
+                    <option value="human">Another Player</option>
+                    <option value="random">Bot — Random</option>
+                    <option value="minimax" selected>Bot — Minimax AI</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Custom Rules</label>
+                <div class="checkbox-row">
+                    <label class="cb"><input type="checkbox" id="rule-engineer" checked> Engineer</label>
+                    <label class="cb"><input type="checkbox" id="rule-objectives" checked> Objectives</label>
+                </div>
+            </div>
+            <input type="text" id="game-id-input" placeholder="Game ID (join existing)">
+            <div id="game-id-display"></div>
+            <button class="btn btn-primary" id="btn-create">New Game</button>
+            <button class="btn btn-ghost" id="btn-join">Join Existing</button>
+        </div>
+    </div>
+
+    <div id="game-ui">
+        <div id="sidebar">
+            <div class="panel panel-info">
+                <div class="panel-title">Game</div>
+                <div id="game-info"></div>
+            </div>
+
+            <div class="panel panel-hand">
+                <div class="panel-title">Your Hand <span id="rotation-hint">R to rotate</span></div>
+                <div id="hand-panel"></div>
+            </div>
+
+            <div class="panel panel-actions" id="meeple-panel" style="display:none">
+                <div class="panel-title">Meeple</div>
+                <p class="hint">Click a position on the tile, or skip</p>
+                <button class="btn btn-small btn-ghost" onclick="window.gameClient.skipMeeple()">Skip</button>
+            </div>
+
+            <div class="panel panel-actions" id="engineer-panel" style="display:none">
+                <div class="panel-title">🔧 Engineer</div>
+                <p class="hint">Rotate a tile 90° — one-time ability</p>
+                <button class="btn btn-small" id="btn-engineer" onclick="window.gameClient.startEngineerMode()">Activate</button>
+                <button class="btn btn-small btn-ghost" id="btn-cancel-engineer" style="display:none" onclick="window.gameClient.cancelEngineerMode()">Cancel</button>
+            </div>
+
+            <div class="panel panel-objectives" id="objectives-panel" style="display:none">
+                <div class="panel-title">🎯 Objectives</div>
+                <div id="objectives-content"></div>
+            </div>
+
+            <div class="panel panel-analytics" id="analytics-panel">
+                <div class="panel-title">Analytics <label class="cb-inline"><input type="checkbox" id="heatmap-toggle"> Heatmap</label></div>
+                <div id="analytics-content"><span class="hint">Appears during play</span></div>
+            </div>
+        </div>
+
+        <div id="board-container"></div>
+        <div id="status-bar">Waiting for game...</div>
+    </div>
+
+    <script type="module" src="/static/js/game.js"></script>
+</body>
+</html>
